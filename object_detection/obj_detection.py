@@ -19,7 +19,7 @@ while True:
 
     # For Apple Silicon
     if torch.backends.mps.is_available() :
-      results = model(frame, device="mps")
+        results = model(frame, device="mps") # Use MPS
     else :
         results = model(frame)
 
