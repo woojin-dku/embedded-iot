@@ -1,7 +1,7 @@
 import cv2
 from ultralytics import YOLO
 import numpy as np
-
+import torch
 
 cap = cv2.VideoCapture("dogs.mp4")
 
@@ -17,7 +17,12 @@ while True:
     if not ret:
         break
 
-    results = model(frame)
+    # For Apple Silicon
+    if torch.backends.mps.is_available() :
+      results = model(frame, device="mps")
+    else :
+        results = model(frame)
+
     #print(results)
     result = results[0]
     #print(result)
