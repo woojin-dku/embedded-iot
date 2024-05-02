@@ -7,28 +7,24 @@ import pafy
 
 def use_result(results, frame) :
     if (results and results[0]) :
-        print("YOLOv8 Result = ", results[0].__dict__)
-#         # print("YOLOv8 Result.boxes = ", results[0].boxes)
-#         # print("YOLOv8 Result.boxes.xyxy = ", results[0].boxes.xyxy)
+        # print("YOLOv8 Result = ", results[0].__dict__)
+        # print("YOLOv8 Result.boxes = ", results[0].boxes)
+        # print("YOLOv8 Result.boxes.xyxy = ", results[0].boxes.xyxy)
         bboxes = np.array(results[0].boxes.xyxy.cpu(), dtype="int")
-        print("YOLOv8 Result.boxes.xyxy.cpu() = ", bboxes)
+        # print("YOLOv8 Result.boxes.xyxy.cpu() = ", bboxes)
         classes = np.array(results[0].boxes.cls.cpu(), dtype="int")
-        print("YOLOv8 Result.boxes.cls.cpu() = ", classes)
         names = results[0].names
         # print("Class names = ", names)
         pred_box = zip(classes, bboxes)
         for cls, bbox in pred_box :
             (x, y, x2, y2) = bbox
-#             # print("bounding box (",x,y,x2,y2,") has class ", cls)
+            # print("bounding box (",x,y,x2,y2,") has class ", cls)
             print("bounding box (",x,y,x2,y2,") has class ", cls, " which is ", names[cls])
-#             # Draw bounding box for dog
-            if(cls == 16) : # Dog class
-                cv2.rectangle(frame, (x,y), (x2,y2), (0,0,255), 2)
-#                 # Display class of bounding box
-#                 # cv2.putText(frame, str(cls), (x, y-5), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 2)
-                cv2.putText(frame, str(names[cls]), (x, y-5), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 2)
+            # Draw bounding box for dog
+            cv2.rectangle(frame, (x,y), (x2,y2), (0,0,255), 2)
+            cv2.putText(frame, str(names[cls]), (x, y-5), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 2)
 
-            scale_percent = 40 # percent of original size
+            scale_percent = 60 # percent of original size
             width = int(frame.shape[1] * scale_percent / 100)
             height = int(frame.shape[0] * scale_percent / 100)
             dim = (width, height)
@@ -40,9 +36,9 @@ def use_result(results, frame) :
     return
 
 
-model = YOLO("yolov8n.pt")
+model = YOLO("best.pt")
 
-url = 'https://www.youtube.com/watch?v=sD9gTAFDq40'
+url = 'https://www.youtube.com/watch?v=D3eWEvlTGug'
 video = pafy.new(url)
 best = video.getbest(preftype="mp4")
 cap = cv2.VideoCapture(best.url)
@@ -56,16 +52,12 @@ while True:
     if not ret:
         break
 
-    results = model(frame)
-
-    # # For Apple Silicon
-    # if torch.backends.mps.is_available() :
-    #     results = model(frame, device="mps") # Use MPS
-    # else :
-    #     results = model(frame)
-    use_result(results, frame)
-
-    # cv2.imshow("Img", frame)
+    # For Apple Silicon
+    if torch.backends.mps.is_available() :
+        results = model(frame, device="mps") # Use MPS
+    else :
+        results = model(frame)
+        use_result(results, frame)
 
     key = cv2.waitKey(1)
     if key == 27:
